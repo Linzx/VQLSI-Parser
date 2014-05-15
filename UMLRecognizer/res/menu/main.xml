@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/operation"
+        android:showAsAction="ifRoom"
+        android:title="@string/op">
+        <menu>
+            <item
+                android:id="@+id/reset"
+                android:title="@string/reset"/>
+            <item
+                android:id="@+id/mode"
+                android:title="@string/mode"/>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/parse"
+        android:showAsAction="ifRoom"
+        android:title="@string/parse"/>
+
+</menu>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">VQL-SI Parser</string>
+    <string name="action_settings">Settings</string>
+    <string name="reset">Clear</string>
+    <string name="parse">Parse</string>
+    <string name="op">op</string>
+    <string name="mode">mode</string>
+
+</resources>
