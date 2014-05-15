@@ -15,7 +15,7 @@ public class SystemConstant {
 	public final static int PARALLEL_VERTICAL_ANGLE = 30;
 	
 	// 交叉比例因子，用来判断线段是否在矩形框内
-	public final static float CROSS_LENGTH_RATIO = 3/5F;
+	public final static float CROSS_LENGTH_RATIO = 4/5F;
 	
 	// 识别模式
 	public static enum MODE{delay,current};

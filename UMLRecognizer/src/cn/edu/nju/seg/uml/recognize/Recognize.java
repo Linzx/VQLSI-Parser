@@ -11,7 +11,6 @@ import cn.edu.nju.seg.uml.sketch.Triangle;
 import cn.edu.nju.seg.uml.sketch.ULine;
 import cn.edu.nju.seg.uml.sketch.UMLClass;
 import cn.edu.nju.seg.uml.sketch.UMLInterface;
-import cn.edu.nju.seg.uml.util.StringValue;
 
 /**
  * @author Zhang Xuelin
