@@ -65,4 +65,14 @@ public class ULine {
 		return "ULine [startPoint=(" + startPoint.x + "," + startPoint.y + ")"
 				+ ", endPoint=(" + endPoint.x + "," + endPoint.y + ")" + "]";
 	}
+	
+	public PointF getStartPointF()
+	{
+		return new PointF(this.startPoint.x,this.startPoint.y);
+	}
+	
+	public PointF getEndPointF()
+	{
+		return new PointF(this.endPoint.x,this.endPoint.y);
+	}
 }

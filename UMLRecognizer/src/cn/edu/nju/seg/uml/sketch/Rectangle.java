@@ -2,6 +2,8 @@ package cn.edu.nju.seg.uml.sketch;
 
 import java.util.List;
 
+import cn.edu.nju.seg.uml.recognize.CornerDetect;
+
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -59,6 +61,11 @@ public class Rectangle extends RectF {
 		this.rightTopCorner = new PointF(right,top);
 		this.leftBottomCorner = new PointF(left,bottom);
 		
+	}
+	
+	public float getWidth()
+	{
+		return CornerDetect.getDis(leftTopCorner, rightTopCorner);
 	}
 
 	public Rectangle(PointF leftTopCorner, PointF rightTopCorner,

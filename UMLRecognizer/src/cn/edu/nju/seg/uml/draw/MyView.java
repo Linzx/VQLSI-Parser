@@ -18,6 +18,7 @@ import cn.edu.nju.seg.uml.sketch.Rectangle;
 import cn.edu.nju.seg.uml.sketch.Triangle;
 import cn.edu.nju.seg.uml.sketch.ULine;
 import cn.edu.nju.seg.uml.sketch.UMLClass;
+import cn.edu.nju.seg.uml.sketch.UMLGeneralization;
 import cn.edu.nju.seg.uml.sketch.UMLInterface;
 import cn.edu.nju.seg.uml.util.StringValue;
 
@@ -35,7 +36,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 
-public class MyView extends View{
+public class MyView extends View {
 
 	private Paint paint = new Paint();
 	private Paint np = new Paint();
@@ -65,16 +66,16 @@ public class MyView extends View{
 
 	// corner points
 	public static TreeMap<Long, GesturePoint> cornerPoints = new TreeMap<Long, GesturePoint>();
-	
+
 	// user string input includes x, y, string value
 	public static List<StringValue> stringValues = new ArrayList<StringValue>();
 
 	public boolean flag = false;
 	public boolean firstVelocity = true;
 	public long lastTimeIndex = 0l;
-	
+
 	public static float downX = 0f;
-	public static float downY= 0f;
+	public static float downY = 0f;
 	public static boolean isLongClick = false;
 
 	// start point and end point of each sketch
@@ -111,9 +112,6 @@ public class MyView extends View{
 		setY(0f);
 
 	}
-	
-	
-
 
 	@SuppressLint("NewApi")
 	@Override
@@ -154,8 +152,8 @@ public class MyView extends View{
 			gPoints.put(timeIndex, startPoint);
 			return super.onTouchEvent(event);
 		case MotionEvent.ACTION_MOVE:
-			 isLongClick = false; // 如果有移动，则判断不是长按。
-			
+			isLongClick = false; // 如果有移动，则判断不是长按。
+
 			path.lineTo(pointX, pointY);
 
 			mVelocityTracker.addMovement(event);
@@ -248,7 +246,7 @@ public class MyView extends View{
 				cornerPath.addCircle(_x, _y, 3, Path.Direction.CW);
 			}
 
-			if(mode.equals(MODE.current))
+			if (mode.equals(MODE.current))
 				path.reset();
 
 			/*
@@ -287,15 +285,13 @@ public class MyView extends View{
 		return false;
 	}
 
-
 	@Override
 	protected void onDraw(Canvas canvas) {
-		
+
 		canvas.drawPath(path, paint);
 		if (mode.equals(MODE.current)) {
-			
 
-			//canvas.drawPath(cornerPath, cornerPaint);
+			// canvas.drawPath(cornerPath, cornerPaint);
 
 			for (ULine ul : LineContainer.lines) {
 				canvas.drawLine(ul.getStartPoint().x, ul.getStartPoint().y,
@@ -307,7 +303,8 @@ public class MyView extends View{
 			}
 
 			for (UMLClass umlClass : Recognize.umlClasses) {
-				//canvas.drawText("UML Class", umlClass.left, umlClass.top - 2,cornerPaint1);
+				// canvas.drawText("UML Class", umlClass.left, umlClass.top -
+				// 2,cornerPaint1);
 
 				canvas.drawRect(umlClass, np);
 				ULine line = umlClass.getInnerLine();
@@ -321,7 +318,8 @@ public class MyView extends View{
 			}
 
 			for (UMLInterface umlInterface : Recognize.umlInterfaces) {
-				//canvas.drawText("UML Interface", umlInterface.left,umlInterface.top - 2, cornerPaint1);
+				// canvas.drawText("UML Interface",
+				// umlInterface.left,umlInterface.top - 2, cornerPaint1);
 				canvas.drawRect(umlInterface, np);
 				ULine line = umlInterface.getInnerLine();
 				canvas.drawLine(line.getStartPoint().x, line.getStartPoint().y,
@@ -340,14 +338,32 @@ public class MyView extends View{
 				canvas.drawLine(pf.x, pf.y, corners.get(0).x, corners.get(0).y,
 						np);
 			}
-			for(StringValue sv: stringValues)
-			{
-				canvas.drawText(sv.getValue(), sv.getX(), sv.getY(), cornerPaint1);
+
+			for (UMLGeneralization ug : Recognize.umlGeneralizations) {
+				
+				List<PointF> corners = ug.getTriangle().getCorners();
+				PointF pf = corners.get(0);
+				for (int i = 1; i < corners.size(); i++) {
+					PointF pf2 = corners.get(i);
+					canvas.drawLine(pf.x, pf.y, pf2.x, pf2.y, np);
+					pf = pf2;
+				}
+
+				canvas.drawLine(pf.x, pf.y, corners.get(0).x, corners.get(0).y,
+						np);
+
+				canvas.drawLine(ug.getLine().getStartPointF().x, ug.getLine()
+						.getStartPointF().y, ug.getLine().getEndPointF().x, ug
+						.getLine().getEndPointF().y, np);
+			}
+			for (StringValue sv : stringValues) {
+				canvas.drawText(sv.getValue(), sv.getX(), sv.getY(),
+						cornerPaint1);
 			}
 		} else if (mode.equals(MODE.delay)) {
 			if (parse) {
-				
-				//canvas.drawPath(cornerPath, cornerPaint);
+
+				// canvas.drawPath(cornerPath, cornerPaint);
 
 				for (ULine ul : LineContainer.lines) {
 					canvas.drawLine(ul.getStartPoint().x, ul.getStartPoint().y,
@@ -359,7 +375,8 @@ public class MyView extends View{
 				}
 
 				for (UMLClass umlClass : Recognize.umlClasses) {
-					//canvas.drawText("UML Class", umlClass.left,umlClass.top - 2, cornerPaint1);
+					// canvas.drawText("UML Class", umlClass.left,umlClass.top -
+					// 2, cornerPaint1);
 
 					canvas.drawRect(umlClass, np);
 					ULine line = umlClass.getInnerLine();
@@ -374,7 +391,8 @@ public class MyView extends View{
 				}
 
 				for (UMLInterface umlInterface : Recognize.umlInterfaces) {
-					//canvas.drawText("UML Interface", umlInterface.left,umlInterface.top - 2, cornerPaint1);
+					// canvas.drawText("UML Interface",
+					// umlInterface.left,umlInterface.top - 2, cornerPaint1);
 					canvas.drawRect(umlInterface, np);
 					ULine line = umlInterface.getInnerLine();
 					canvas.drawLine(line.getStartPoint().x,
@@ -394,12 +412,30 @@ public class MyView extends View{
 					canvas.drawLine(pf.x, pf.y, corners.get(0).x,
 							corners.get(0).y, np);
 				}
-				
-				for(StringValue sv: stringValues)
-				{
-					canvas.drawText(sv.getValue(), sv.getX(), sv.getY(), cornerPaint1);
+
+				for (StringValue sv : stringValues) {
+					canvas.drawText(sv.getValue(), sv.getX(), sv.getY(),
+							cornerPaint1);
 				}
-			
+				
+				for (UMLGeneralization ug : Recognize.umlGeneralizations) {
+					
+					List<PointF> corners = ug.getTriangle().getCorners();
+					PointF pf = corners.get(0);
+					for (int i = 1; i < corners.size(); i++) {
+						PointF pf2 = corners.get(i);
+						canvas.drawLine(pf.x, pf.y, pf2.x, pf2.y, np);
+						pf = pf2;
+					}
+
+					canvas.drawLine(pf.x, pf.y, corners.get(0).x, corners.get(0).y,
+							np);
+
+					canvas.drawLine(ug.getLine().getStartPointF().x, ug.getLine()
+							.getStartPointF().y, ug.getLine().getEndPointF().x, ug
+							.getLine().getEndPointF().y, np);
+				}
+
 			}
 		}
 

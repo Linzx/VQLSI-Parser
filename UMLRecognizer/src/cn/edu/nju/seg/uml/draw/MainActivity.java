@@ -121,6 +121,7 @@ public class MainActivity extends Activity {
 		Recognize.triangles.clear();
 		Recognize.umlClasses.clear();
 		Recognize.umlInterfaces.clear();
+		Recognize.umlGeneralizations.clear();
 		MyView.parse = false;
 		MyView.stringValues.clear();
 		view.postInvalidate();

@@ -10,6 +10,7 @@ import cn.edu.nju.seg.uml.sketch.Rectangle;
 import cn.edu.nju.seg.uml.sketch.Triangle;
 import cn.edu.nju.seg.uml.sketch.ULine;
 import cn.edu.nju.seg.uml.sketch.UMLClass;
+import cn.edu.nju.seg.uml.sketch.UMLGeneralization;
 import cn.edu.nju.seg.uml.sketch.UMLInterface;
 
 /**
@@ -26,8 +27,10 @@ public class Recognize {
 	public static List<Triangle> triangles = new ArrayList<Triangle>();
 
 	public static List<UMLInterface> umlInterfaces = new ArrayList<UMLInterface>();
-	
+
 	public static List<UMLClass> umlClasses = new ArrayList<UMLClass>();
+	
+	public static List<UMLGeneralization> umlGeneralizations = new ArrayList<UMLGeneralization>();
 
 	public static void recognize() {
 		if (lines.size() >= 3) {
@@ -123,17 +126,18 @@ public class Recognize {
 				}
 			}
 		}
-		
+
 		/**
 		 * 查看是否有 UML Interface 图形
 		 */
 		if (!rectangles.isEmpty() && !lines.isEmpty()) {
 			for (int m = 0; m < lines.size(); m++) {
 				ULine line = lines.get(m);
-				float angle = (float) (line.getAngle()*180/Math.PI);
+				float angle = (float) (line.getAngle() * 180 / Math.PI);
 				float th = SystemConstant.PARALLEL_VERTICAL_ANGLE;
 				if ((angle < th && angle > th * -1)
-						|| (angle > 180 - th && angle < 180 + th) && !rectangles.isEmpty()) {
+						|| (angle > 180 - th && angle < 180 + th)
+						&& !rectangles.isEmpty()) {
 					for (int n = 0; n < rectangles.size(); n++) {
 						Rectangle rectangle = rectangles.get(n);
 						if (isInRect(rectangle, line)) {
@@ -144,22 +148,22 @@ public class Recognize {
 						}
 					}
 				}
-				if(rectangles.isEmpty())
+				if (rectangles.isEmpty())
 					break;
 			}
 		}
 		/**
 		 * 查看是否有 UML Class 图形
 		 */
-		if(!umlInterfaces.isEmpty() && !lines.isEmpty())
-		{
+		if (!umlInterfaces.isEmpty() && !lines.isEmpty()) {
 			for (int m = 0; m < lines.size(); m++) {
 				ULine line = lines.get(m);
-				float angle = (float) (line.getAngle()*180/Math.PI);
-				
+				float angle = (float) (line.getAngle() * 180 / Math.PI);
+
 				float th = SystemConstant.PARALLEL_VERTICAL_ANGLE;
 				if ((angle < th && angle > th * -1)
-						|| (angle > 180 - th && angle < 180 + th)&&!umlInterfaces.isEmpty()) {
+						|| (angle > 180 - th && angle < 180 + th)
+						&& !umlInterfaces.isEmpty()) {
 					for (int n = 0; n < umlInterfaces.size(); n++) {
 						Rectangle rectangle = umlInterfaces.get(n);
 						if (isInRect(rectangle, line)) {
@@ -170,32 +174,108 @@ public class Recognize {
 						}
 					}
 				}
-				if(umlInterfaces.isEmpty())
+				if (umlInterfaces.isEmpty())
 					break;
 			}
 		}
 
+		/**
+		 * 查看是否有继承关系： 三角形和一条直线的组合图形 需要满足条件： 1. 直线和三角形的一边垂直 2. 直线的一端距离这条边很近 3.
+		 * 这条直线在这条边两个顶点之间 4. 并且和三角形另外一个顶点分步在这条边两边
+		 */
+		if (!triangles.isEmpty() && !lines.isEmpty()) {
+			for (Triangle t : triangles) {
+				List<ULine> tLines = t.getLines();
+				for (int l = 0; l < lines.size(); l++) {
+					ULine lin = lines.get(l);
+					for (ULine ul : tLines) {
+						// 如果能满足和三角形的一边垂直条件，则继续判断其他条件
+						if (isVertical(ul, lin)) {
+							PointF pf1 = lin.getStartPointF();
+							PointF pf2 = lin.getEndPointF();
+
+							float len1 = getPLDis(pf1, ul);
+							float len2 = getPLDis(pf2, ul);
+
+							float len;
+							if (len1 < len2) {
+								len = len1;
+							} else {
+								len = len1;
+								pf1 = lin.getEndPointF();
+								pf2 = lin.getStartPointF();
+							}
+
+							float ulen = lin.getLength();
+
+							// 保证离三角形最近的点距离三角形边的距离很近
+							if (len / ulen < SystemConstant.DIS_RATIO) {
+
+								float arc1 = getAngle(
+										new ULine(ul.getStartPointF(),
+												ul.getEndPointF()), new ULine(
+												ul.getStartPointF(), pf1));
+								float arc2 = getAngle(
+										new ULine(ul.getEndPointF(),
+												ul.getStartPointF()),
+										new ULine(ul.getEndPointF(), pf1));
+
+								if (arc1 <90 && arc2<90) // 保证在三角形边的两个顶点中间
+								{
+									float l1 = lin.getLength();
+									float l2 = CornerDetect.getDis(pf2, t.getThirdPoint(ul));
+									
+									if(l1 < l2)	// 三角形第三个顶点距离远
+									{
+										UMLGeneralization ug = new UMLGeneralization(t, lin);
+										triangles.remove(t);
+										lines.remove(lin);
+										umlGeneralizations.add(ug);
+										break;
+									}
+								}
+							}
+
+						}
+					}
+					
+				}
+				if(lines.isEmpty())
+				{
+					break;
+				}
+			}
+		}
 	}
-	
-	public static boolean isPointInRect(float x, float y)
-	{
+
+	public static float getPLDis(PointF p, ULine l) {
+		float x1 = l.getStartPoint().x;
+		float y1 = l.getStartPoint().y;
+		float x2 = l.getEndPoint().x;
+		float y2 = l.getEndPoint().y;
+
+		float k = (y2 - y1) / (x2 - x1);
+
+		return (float) (Math.abs(p.y - k * p.x + x1 * k - y1) / Math.sqrt(1 + k
+				* k));
+	}
+
+	public static boolean isPointInRect(float x, float y) {
 		boolean isIn = false;
 		for (UMLClass umlClass : umlClasses) {
-			if(umlClass.contains(x,y))
-			{
+			if (umlClass.contains(x, y)) {
 				isIn = true;
 				break;
 			}
 		}
 
 		for (UMLInterface umlInterface : umlInterfaces) {
-			if(umlInterface.contains(x, y))
-			{
+			if (umlInterface.contains(x, y)) {
 				isIn = true;
 				break;
 			}
 		}
-		
+
 		return isIn;
 	}
 
@@ -205,7 +285,9 @@ public class Recognize {
 		float x2 = line.getEndPoint().x;
 		float y2 = line.getEndPoint().y;
 
-		if (rectangle.contains(x1, y1) && rectangle.contains(x2, y2))
+		float lengthRatio = line.getLength() / rectangle.getWidth();
+		if (rectangle.contains(x1, y1) && rectangle.contains(x2, y2)
+				&& lengthRatio > SystemConstant.CROSS_LENGTH_RATIO)
 			return true;
 		else {
 			float left = rectangle.left;
